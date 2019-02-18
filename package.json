@@ -21,6 +21,8 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^8.0.4",
     "babel-preset-env": "^1.7.0",
+    "dataloader": "^1.4.0",
+    "graphql": "^14.1.1",
     "react": "^16.6.1",
     "react-dom": "^16.6.1",
     "react-dom-server": "^0.0.5",

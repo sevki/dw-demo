@@ -9,12 +9,9 @@
 
 import React from "react";
 import ReactDOMServer from "react-dom/server";
+import { Careers } from "./components/Careers";
+import handleGraphQLRequest from "./graphql";
 
-class HelloMessage extends React.Component {
-  render() {
-    return <div className="App-header">Hello, DevWeek SF!</div>;
-  }
-}
 const header = `<!DOCTYPE html>
 <html lang="en">\
   <head>
@@ -29,17 +26,32 @@ const footer = `</div>
 </html>`;
 
 let routes = {
-  "/": <HelloMessage />
+  "/": <Careers />
 };
 
 async function handleRequest(event) {
   const u = new URL(event.request.url);
-  let rendered = ReactDOMServer.renderToString(routes[u.pathname]);
-  return new Response(header + rendered + footer, {
-    headers: {
-      "Content-Type": "text/html"
-    }
-  });
+
+  switch (u.pathname) {
+    case "/graphql":
+      return await handleGraphQLRequest(event);
+    case "/graphiql":
+      return await fetch("https://storage.googleapis.com/cfgraphql/index.html");
+    case "/graphiql/cfgql.css":
+      return await fetch("https://storage.googleapis.com/cfgraphql/cfgql.css");
+    case "/graphiql/cfgql.js":
+      return await fetch("https://storage.googleapis.com/cfgraphql/cfgql.js");
+    default:
+      if (u.pathname in routes) {
+        let rendered = ReactDOMServer.renderToString(routes[u.pathname]);
+        return new Response(header + rendered + footer, {
+          headers: {
+            "Content-Type": "text/html"
+          }
+        });
+      }
+      return fetch(event.request);
+  }
 }
 
 self.addEventListener("fetch", event => {
