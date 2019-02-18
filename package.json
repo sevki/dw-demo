@@ -4,7 +4,6 @@
   "description": "",
   "scripts": {
     "build": "webpack -p",
-    "terraform": "yarn build && terraform apply -auto-approve",
     "deploy": "yarn build && node ./scripts/deploy.js",
     "preview": "yarn build && node ./scripts/open-preview.js"
   },

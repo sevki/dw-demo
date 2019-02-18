@@ -10,8 +10,8 @@ module.exports = {
     hints: false
   },
   output: {
-    path: __dirname + "/dist",
-    publicPath: "dist",
+    path: __dirname + "",
+    publicPath: "/",
     filename: "worker.js"
   },
   module: {

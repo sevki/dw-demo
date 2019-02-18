@@ -1,0 +1,9 @@
+{
+  "scripts": [
+    {
+      "matchRef": "refs/heads/master",
+      "file": "/worker.js",
+      "script": "dw-demo"
+    }
+  ]
+}
