@@ -32,83 +32,23 @@ async function decodequery(request) {
 }
 
 var schema = buildSchema(`
-  "DNS record type."
-  enum RecordType {
-    A
-    AAAA
-    MX
-    CNAME
-    DNSKEY
-    DS
-    NAPTR
-    NS
-    PTR
-    SPF
-    SRV
-    SSHFP
-    TLSA
-    TXT
+   type Job {
+    title: String
   }
-  "DNS query response"
-   type Answer {
-    "The record owner."
-    name: String
-    """The type of DNS record.
-    These are defined here:
-    https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
-    """
-    type: Int
-    """The number of seconds the answer can be stored
-    in cache before it is considered stale."""
-    TTL: Int
-    """The value of the DNS record for the given name and type.
-    The data will be in text for standardized record types and in hex for unknown types."""
-    data: String
-  }
-  "A DNS query to resolve a DNS record of a given type."
+
   type Query {
-    resolve(name: String!, type: RecordType!): [Answer]
+    jobs: [Job]
   }
 `);
 
-async function resolve(event, x) {
-  let req = new Request(
-    "https://cloudflare-dns.com/dns-query?name=" + x.name + "&type=" + x.type,
-    {
-      headers: {
-        Accept: "application/dns-json"
-      }
-    }
-  );
-
-  let cache = await caches.open("dns");
-  let resp = await cache.match(req);
-
-  if (!resp) {
-    resp = await fetch(req);
-    event.waitUntil(cache.put(req, resp.clone()));
-  }
-  let ans = await resp.json();
-  return ans.Answer;
-}
-
-async function batchResolver(event, keys) {
-  return keys.map(id => resolve(event, id));
-}
-
-self.cache = new Map();
-
 class Root {
-  constructor(event) {
-    this.resolvers = new DataLoader(keys => batchResolver(event, keys), {
-      cacheKeyFn: q => {
-        q.type + q.name;
-      },
-      cacheMap: self.cache
-    });
-  }
-  async resolve(x) {
-    return this.resolvers.load(x);
+  constructor(event) {}
+  async jobs() {
+    const resp = await fetch(
+      "https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs"
+    );
+    const jobs = await resp.json();
+    return jobs.jobs;
   }
 }
 
