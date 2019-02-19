@@ -42,7 +42,7 @@ var schema = buildSchema(`
 `);
 
 class Root {
-  constructor(event) {}
+  constructor() {}
   async jobs() {
     const resp = await fetch(
       "https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs"
@@ -51,9 +51,12 @@ class Root {
     return jobs.jobs;
   }
 }
-
+export async function execquery(gql) {
+  console.log(gql);
+  let response = await graphql(schema, gql.query, new Root());
+  return new Response(JSON.stringify(response));
+}
 export default async function handleGraphQLRequest(event) {
   let gql = await decodequery(event.request);
-  let response = await graphql(schema, gql.query, new Root(event));
-  return new Response(JSON.stringify(response));
+  return execquery(gql);
 }

@@ -9,8 +9,14 @@
 
 import React from "react";
 import ReactDOMServer from "react-dom/server";
+import ReactDOM from "react-dom";
 import { Careers } from "./components/Careers";
-import handleGraphQLRequest from "./graphql";
+import handleGraphQLRequest, { execquery } from "./graphql";
+import ApolloClient from "apollo-boost";
+import { ApolloProvider } from "react-apollo";
+import { createHttpLink } from "apollo-link-http";
+import { InMemoryCache } from "apollo-cache-inmemory";
+import { HelloMessage } from "./components/HelloMessage";
 
 const header = `<!DOCTYPE html>
 <html lang="en">\
@@ -19,6 +25,7 @@ const header = `<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://unpkg.com/tachyons@4.10.0/css/tachyons.min.css"/>
   </head>
+  <script src="/worker.js"></script>
   <body><div id="app">`;
 
 const footer = `</div>
@@ -43,7 +50,16 @@ async function handleRequest(event) {
       return await fetch("https://storage.googleapis.com/cfgraphql/cfgql.js");
     default:
       if (u.pathname in routes) {
-        let rendered = ReactDOMServer.renderToString(routes[u.pathname]);
+        const client = new ApolloClient({
+          ssrMode: true,
+          link: createHttpLink(),
+          cache: new InMemoryCache(),
+          request: execquery
+        });
+
+        let rendered = ReactDOMServer.renderToString(
+          <ApolloProvider client={client}>{routes[u.pathname]}</ApolloProvider>
+        );
         return new Response(header + rendered + footer, {
           headers: {
             "Content-Type": "text/html"
@@ -57,3 +73,18 @@ async function handleRequest(event) {
 self.addEventListener("fetch", event => {
   event.respondWith(handleRequest(event));
 });
+
+if (typeof navigator !== "undefined") {
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function() {
+      const app = document.querySelector("#app");
+      const client = new ApolloClient({});
+      ReactDOM.hydrate(
+        <ApolloProvider client={client}>
+          {routes[location.pathname]}
+        </ApolloProvider>,
+        app
+      );
+    });
+  }
+}
