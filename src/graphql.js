@@ -37,7 +37,7 @@ var schema = buildSchema(`
     location: Location
   }
   type Location {
-    name String
+    name: String
   }
 
   type Query {
