@@ -5,6 +5,9 @@ const GET_JOBS = gql`
   {
     jobs {
       title
+      location {
+        name
+      }
     }
   }
 `;
@@ -22,7 +25,7 @@ export class Careers extends React.Component {
             return (
               <ul>
                 {data.jobs.map(job => (
-                  <li>{job.title}</li>
+                  <li>{job.title} - {job.location.name}</li>
                 ))}
               </ul>
             );

@@ -34,6 +34,10 @@ async function decodequery(request) {
 var schema = buildSchema(`
    type Job {
     title: String
+    location: Location
+  }
+  type Location {
+    name String
   }
 
   type Query {
